@@ -2,7 +2,7 @@ import express from 'express'
 import cors from "cors"
 import { config } from 'dotenv'
 import userRoutes from './modules/user/user.routes.js'
-
+import { errorMiddleware } from './middlewares/errorMiddleware.js'
 config()
 
 
@@ -16,5 +16,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/users', userRoutes)
 
 
+app.use(errorMiddleware)
 
 export default app

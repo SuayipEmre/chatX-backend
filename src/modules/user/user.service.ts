@@ -1,6 +1,7 @@
 import User, { IUser } from "./user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { ApiError } from "../../utils/ApiError.js";
 
 export const createUser = async (data: {
     username: string;
@@ -8,14 +9,14 @@ export const createUser = async (data: {
     password: string;
 }) => {
     console.log('Received data for user creation:', data);
-    
+
     if (!data.username || !data.email || !data.password) {
         throw new Error("All fields are required");
     }
     console.log('Creating user with data:', data);
-    
+
     const exists = await User.findOne({ email: data.email });
-    if (exists) throw new Error("Email already exists");
+    if (exists) throw new ApiError(400, "Email already exists");
 
     const hashed = await bcrypt.hash(data.password, 10);
 
@@ -33,7 +34,7 @@ export const authenticateUser = async (email: string, password: string) => {
     if (!user) throw new Error("Invalid email or password");
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Invalid email or password");
+    if (!match) throw new ApiError(400, "Invalid email or password");
 
     return user;
 };
