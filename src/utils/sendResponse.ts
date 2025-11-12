@@ -17,7 +17,7 @@ export const sendResponse = <T>(
         statusCode,
         status: "success",
         message,
-        ...data,
+        data,
     };
     console.log('Response Payload:', payload);
     

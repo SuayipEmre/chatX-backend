@@ -6,6 +6,14 @@ import conntectDB from "./config/db.js";
 
 const PORT = process.env.PORT || 5000;
 
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled Rejection:", reason);
+});
+
 async function start() {
   // Mongo
   await conntectDB();

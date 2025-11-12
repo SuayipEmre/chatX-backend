@@ -1,7 +1,7 @@
-import { NextFunction, Request } from 'express';
-import { JWT_SECRET } from '../config/env.js';
+import { NextFunction, Request, Response} from 'express';
 import jwt from 'jsonwebtoken'
 import { ApiError } from '../utils/ApiError.js';
+import { JWT_SECRET } from '../config/env.js';
 
 interface JwtPayload {
     id: string;
@@ -9,9 +9,9 @@ interface JwtPayload {
     exp: number;
   }
 
-const ProtectRoute = (req: Request, res: Response, next: NextFunction) => {
+export const protectRoute = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const authHeader = req.headers.authorization
+        const authHeader =  req.headers['authorization']
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             throw new ApiError(401, 'No token provided')
         }
@@ -23,6 +23,8 @@ const ProtectRoute = (req: Request, res: Response, next: NextFunction) => {
 
         
     } catch (err:any) {
+        console.log('Error in ProtectRoute middleware:', err);
+        
         if (err.name === "JsonWebTokenError") {
             return next(new ApiError(401, "Invalid token"));
           }
@@ -34,5 +36,3 @@ const ProtectRoute = (req: Request, res: Response, next: NextFunction) => {
           return next(err);
     }
 }
-
-export default ProtectRoute;

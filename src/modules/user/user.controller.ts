@@ -2,6 +2,8 @@ import { createUser, authenticateUser, generateTokens } from "./user.service.js"
 import { registerSchema, loginSchema } from "./user.schema.js";
 import { sendResponse } from "../../utils/sendResponse.js";
 import { catchAsync } from "../../utils/CatchAsync.js";
+import { ApiError } from "../../utils/ApiError.js";
+import User from "./user.model.js";
 
 
 export const register = catchAsync(async (req, res) => {
@@ -18,3 +20,12 @@ export const login = catchAsync(async (req, res) => {
 });
 
 
+
+export const getProfile = catchAsync(async (req, res) => {
+    const userId = (req as any).user.id
+
+    if (!userId) throw new ApiError(401, "Unauthorized")
+
+    const user = await User.findOne({_id:userId}).select('-password').lean()
+    sendResponse(res, 200, "User profile fetched", user)
+})
