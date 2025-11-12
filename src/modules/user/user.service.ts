@@ -8,13 +8,9 @@ export const createUser = async (data: {
     email: string;
     password: string;
 }) => {
-    console.log('Received data for user creation:', data);
-
     if (!data.username || !data.email || !data.password) {
         throw new Error("All fields are required");
     }
-    console.log('Creating user with data:', data);
-
     const exists = await User.findOne({ email: data.email });
     if (exists) throw new ApiError(400, "Email already exists");
 
@@ -31,7 +27,7 @@ export const createUser = async (data: {
 
 export const authenticateUser = async (email: string, password: string) => {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("Invalid email or password");
+    if (!user) throw new ApiError(404, "Invalid email or password");
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new ApiError(400, "Invalid email or password");
