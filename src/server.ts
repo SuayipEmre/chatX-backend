@@ -1,46 +1,51 @@
 import http from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import app from "./app.js";
 import { createRedisAdapter } from "./config/redis.js";
 import conntectDB from "./config/db.js";
 
+export let io : Server; // 👈 dışa aktarılacak global io referansı
+
 const PORT = process.env.PORT || 5000;
 
-process.on("uncaughtException", (err) => {
-  console.error("❌ Uncaught Exception:", err);
-});
-
-process.on("unhandledRejection", (reason) => {
-  console.error("❌ Unhandled Rejection:", reason);
-});
-
 async function start() {
-  // Mongo
   await conntectDB();
 
-  // HTTP server
   const server = http.createServer(app);
 
-  // Socket.IO
-  const io = new Server(server, {
+  // 🔌 Socket.IO kur
+  io = new Server(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"]
-    }
+      methods: ["GET", "POST"],
+    },
   });
 
-  // Redis adapter (pub/sub)
+  // Redis adapter bağla (eğer aktif kullanacaksan)
   await createRedisAdapter(io);
 
-  io.on("connection", (socket) => {
+  io.on("connection", (socket : Socket) => {
     console.log("✅ Socket connected:", socket.id);
 
+    // 🔹 Kullanıcı chat odasına katılır
+    socket.on("join_chat", (chatId) => {
+      socket.join(chatId);
+      console.log(`👥 User joined chat: ${chatId}`);
+    });
+
+    // 🔹 Yeni mesaj alındığında odaya yay
+    socket.on("new_message", (messageData) => {
+      const chatId = messageData.chat._id || messageData.chat;
+      socket.to(chatId).emit("message_received", messageData);
+    });
+
+    // 🔹 Kullanıcı çıkarsa logla
     socket.on("disconnect", () => {
       console.log("❌ Socket disconnected:", socket.id);
     });
   });
 
-  // Start server
+  // Sunucuyu başlat
   server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });

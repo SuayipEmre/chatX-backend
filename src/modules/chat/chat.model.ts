@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { IUser } from "../user/user.model.js";
 
 export interface IChat extends Document {
+    _id: mongoose.Types.ObjectId;
     chatName?: string;
     isGroupChat: boolean;
     users: IUser["_id"][];
