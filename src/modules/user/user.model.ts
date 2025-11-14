@@ -9,7 +9,7 @@ export interface IUser extends Document {
     avatar?:string,
     createdAt: Date,
     updatedAt: Date,
-    refreshToken?: string;
+    refreshToken?: string | null;
 }
 
 
@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema<IUser>({
     refreshToken: {
         type: String,
         default: null, // ✅ refresh token default değeri
+
       },
 }, {timestamps: true})
 

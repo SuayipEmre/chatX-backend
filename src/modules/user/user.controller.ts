@@ -6,6 +6,7 @@ import { ApiError } from "../../utils/ApiError.js";
 import User, { IUser } from "./user.model.js";
 import jwt from "jsonwebtoken";
 import { JWT_REFRESH_SECRET } from "../../config/env.js";
+import bcrypt from "bcryptjs";
 
 
 export const register = catchAsync(async (req, res) => {
@@ -63,29 +64,56 @@ export const refreshToken = catchAsync(async (req, res) => {
 
 export const updateProfile = catchAsync(async (req, res) => {
     const userId = (req as any).user.id;
-  
-  
+
+
     const { email, username, avatar } = req.body;
-  
+
     if (!email && !username && !avatar) {
-      throw new ApiError(400, "At least one field (email, username, avatar) is required to update");
+        throw new ApiError(400, "At least one field (email, username, avatar) is required to update");
     }
-  
+
     if (email) {
-      const existingUser = await User.findOne({ email }).lean()
-      if (existingUser && existingUser._id.toString() !== userId) {
-        throw new ApiError(400, "Email already in use");
-      }
+        const existingUser = await User.findOne({ email }).lean()
+        if (existingUser && existingUser._id.toString() !== userId) {
+            throw new ApiError(400, "Email already in use");
+        }
     }
-  
+
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { email, username, avatar },
-      { new: true, runValidators: true }
+        userId,
+        { email, username, avatar },
+        { new: true, runValidators: true }
     ).select("-password");
-  
+
     if (!updatedUser) throw new ApiError(404, "User not found");
-  
+
     sendResponse(res, 200, "Profile updated successfully", updatedUser);
-  });
-  
+});
+
+
+export const changePassword = catchAsync(async (req, res) => {
+    const userId = (req as any).user.id
+
+    const { oldPassword, newPassword } = req.body
+
+    if (!oldPassword || !newPassword) throw new ApiError(400, "Old password and new password are required")
+
+    const user = await User.findById(userId).select('+password')
+
+    if (!user) throw new ApiError(404, "User not found")
+
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new ApiError(400, "Old password is incorrect")
+
+    if (oldPassword === newPassword) throw new ApiError(400, "New password must be different from old password")
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+    user.password = hashedPassword
+    user.refreshToken = null
+    await user.save()
+
+    sendResponse(res, 200, "Password changed successfully", null)
+})
