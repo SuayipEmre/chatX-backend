@@ -19,8 +19,5 @@ export const sendResponse = <T>(
         message,
         data,
     };
-    console.log('Response Payload:', payload);
-    
-
     return res.status(statusCode).json(payload);
 };

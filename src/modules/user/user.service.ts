@@ -1,7 +1,8 @@
 import User, { IUser } from "./user.model.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken'
 import { ApiError } from "../../utils/ApiError.js";
+import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/env.js";
 
 export const createUser = async (data: {
     username: string;
@@ -36,17 +37,20 @@ export const authenticateUser = async (email: string, password: string) => {
 };
 
 export const generateTokens = (user: IUser) => {
+    console.log('Generating tokens for user : ', user);
+    
     const accessToken = jwt.sign(
         { id: user._id },
-        process.env.JWT_SECRET as string,
+        JWT_SECRET as string,
         { expiresIn: "1h" }
     );
 
     const refreshToken = jwt.sign(
         { id: user._id },
-        process.env.JWT_REFRESH_SECRET as string,
+        JWT_REFRESH_SECRET as string,
         { expiresIn: "7d" }
     );
 
     return { accessToken, refreshToken };
 };
+

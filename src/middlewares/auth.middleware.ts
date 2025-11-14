@@ -2,6 +2,7 @@ import { NextFunction, Request, Response} from 'express';
 import jwt from 'jsonwebtoken'
 import { ApiError } from '../utils/ApiError.js';
 import { JWT_SECRET } from '../config/env.js';
+import User from '../modules/user/user.model.js';
 
 interface JwtPayload {
     id: string;
@@ -9,7 +10,7 @@ interface JwtPayload {
     exp: number;
   }
 
-export const protectRoute = (req: Request, res: Response, next: NextFunction) => {
+export const protectRoute = async(req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader =  req.headers['authorization']
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,7 +19,15 @@ export const protectRoute = (req: Request, res: Response, next: NextFunction) =>
         const token = authHeader.split(' ')[1]
 
         const decoded = jwt.verify(token, JWT_SECRET as string) as JwtPayload
+        
+        const user = await User.findById(decoded.id)
+        
+        if (!user || !user.refreshToken) {
+          throw new ApiError(401, "Token invalid or user logged out");
+        }
+
         (req as any).user = { id: decoded.id }
+        
         next()
 
         

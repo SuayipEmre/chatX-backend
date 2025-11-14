@@ -8,5 +8,6 @@ export const {
     MONGO_URI,
     JWT_SECRET,
     JWT_EXPIRES_IN,
-    REDIS_URL
+    REDIS_URL,
+    JWT_REFRESH_SECRET
 } = process.env;
