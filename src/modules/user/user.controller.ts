@@ -90,7 +90,6 @@ export const updateProfile = catchAsync(async (req, res) => {
     sendResponse(res, 200, "Profile updated successfully", updatedUser);
 });
 
-
 export const changePassword = catchAsync(async (req, res) => {
     const userId = (req as any).user.id
 
@@ -117,3 +116,56 @@ export const changePassword = catchAsync(async (req, res) => {
 
     sendResponse(res, 200, "Password changed successfully", null)
 })
+
+export const getAllUser = catchAsync(async (req, res) => {
+    const users = await User.find().select('-password -refreshToken').lean()
+    sendResponse(res, 200, "All users fetched", users)
+})
+
+
+export const searchUsers = catchAsync(async (req, res) => {
+    const { query } = req.query;
+    if (!query) throw new ApiError(400, "Search query is required");
+  
+    // pagination params
+    const page = parseInt((req.query.page as string) || "1");
+    const limit = parseInt((req.query.limit as string) || "10");
+    const skip = (page - 1) * limit;
+  
+    const userId = (req as any).user?.id;
+  
+    // hybrid search: text index + regex
+    const searchFilter = {
+      $and: [
+        { _id: { $ne: userId } },
+        {
+          $or: [
+            { $text: { $search: query as string } },
+            { username: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } },
+          ],
+        },
+      ],
+    };
+  
+    const total = await User.countDocuments(searchFilter);
+  
+    const users = await User.find(searchFilter)
+      .select("-password -refreshToken")
+      .sort({ score: { $meta: "textScore" } })
+      .skip(skip)
+      .limit(limit);
+  
+    const totalPages = Math.ceil(total / limit);
+  
+    sendResponse(res, 200, "Search results fetched", {
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      data: users,
+    });
+  });
+  

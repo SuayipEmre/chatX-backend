@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { changePassword, getProfile, login, logout, refreshToken, register, updateProfile } from "./user.controller.js";
+import { changePassword, getAllUser, getProfile, login, logout, refreshToken, register, searchUsers, updateProfile } from "./user.controller.js";
 import { protectRoute } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -14,4 +14,7 @@ router.post('/refresh-token', refreshToken)
 router.get("/me", protectRoute, getProfile);
 router.put('/me', protectRoute, updateProfile)
 router.put('/change-password', protectRoute, changePassword)
+
+router.get('/search', protectRoute, searchUsers)
+router.get('/', protectRoute, getAllUser)
 export default router
