@@ -58,4 +58,34 @@ export const refreshToken = catchAsync(async (req, res) => {
     user.refreshToken = tokens.refreshToken
     await user.save()
     sendResponse(res, 200, "Token refreshed", tokens)
-}) 
+})
+
+
+export const updateProfile = catchAsync(async (req, res) => {
+    const userId = (req as any).user.id;
+  
+  
+    const { email, username, avatar } = req.body;
+  
+    if (!email && !username && !avatar) {
+      throw new ApiError(400, "At least one field (email, username, avatar) is required to update");
+    }
+  
+    if (email) {
+      const existingUser = await User.findOne({ email }).lean()
+      if (existingUser && existingUser._id.toString() !== userId) {
+        throw new ApiError(400, "Email already in use");
+      }
+    }
+  
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { email, username, avatar },
+      { new: true, runValidators: true }
+    ).select("-password");
+  
+    if (!updatedUser) throw new ApiError(404, "User not found");
+  
+    sendResponse(res, 200, "Profile updated successfully", updatedUser);
+  });
+  
