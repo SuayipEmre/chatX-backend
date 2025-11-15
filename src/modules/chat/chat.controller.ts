@@ -38,6 +38,7 @@ export const accessChat = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, 200, "Chat accessed successfully", chat);
 });
+
 /**
  * @desc  Fetch all chats for the logged-in user
  * @route GET /api/chats
@@ -63,4 +64,44 @@ export const fetchChats = catchAsync(async (req: Request, res: Response) => {
     .lean();
 
   sendResponse(res, 200, "Chats fetched successfully", chats);
+});
+
+
+/**
+ * @desc    Create a new group chat
+ * @route   POST /api/chats/group
+ * @access  Private
+ */
+export const createGroupChat = catchAsync(async (req: Request, res: Response) => {
+  const { chatName, users } = req.body;
+  const currentUserId = (req as any).user.id;
+
+  if (!chatName || !users)
+    throw new ApiError(400, "chatName and users are required");
+
+  let members: string[] = users;
+
+  if (!Array.isArray(members))
+    throw new ApiError(400, "Users must be an array");
+
+  if (members.length < 2)
+    throw new ApiError(400, "At least 2 users are required to form a group");
+
+  
+  if (!members.includes(currentUserId)) {
+    members.push(currentUserId);
+  }
+
+  const groupChat = await Chat.create({
+    chatName,
+    isGroupChat: true,
+    users: members,
+    groupAdmin: currentUserId,
+  });
+
+  const fullGroupChat = await Chat.findById(groupChat._id)
+    .populate("users", "-password -refreshToken")
+    .populate("groupAdmin", "-password -refreshToken");
+
+  sendResponse(res, 201, "Group chat created", fullGroupChat);
 });
