@@ -38,15 +38,27 @@ export const accessChat = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, 200, "Chat accessed successfully", chat);
 });
-
+/**
+ * @desc  Fetch all chats for the logged-in user
+ * @route GET /api/chats
+ * @access Private
+ */
 
 export const fetchChats = catchAsync(async (req: Request, res: Response) => {
   const currentUserId = (req as any).user.id;
 
-  const chats = await Chat.find({ users: { $elemMatch: { $eq: currentUserId } } })
+  const chats = await Chat.find({
+    users: { $elemMatch: { $eq: currentUserId } }
+  })
     .populate("users", "-password -refreshToken")
     .populate("groupAdmin", "-password -refreshToken")
-    .populate("latestMessage")
+    .populate({
+      path: "latestMessage",
+      populate: {
+        path: "sender",
+        select: "username email avatar" // frontend için yeterli
+      }
+    })
     .sort({ updatedAt: -1 })
     .lean();
 
