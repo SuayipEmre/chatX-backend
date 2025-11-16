@@ -25,10 +25,25 @@ export const removeFromGroup = async (groupId: string, userId: string) => {
         throw new ApiError(400, "User is not in this group");
     }
 
-    if(group.admin.toString() === userId) throw new ApiError(400, "Group admin cannot be removed from the group")
+    if (group.admin.toString() === userId) throw new ApiError(400, "Group admin cannot be removed from the group")
 
     group.users = group.users.filter(item => item.toString() != userId)
     await group.save()
 
     return group
 }
+
+export const renameGroup = async (groupId: string, newName: string) => {
+    const group = await Group.findById(groupId)
+    if (!group) throw new ApiError(404, "Group not found")
+
+    if (!newName || newName.trim().length === 0) throw new ApiError(400, "New group name cannot be empty")
+
+    group.groupName = newName.trim()
+    await group.save()
+
+    return group
+
+}
+
+

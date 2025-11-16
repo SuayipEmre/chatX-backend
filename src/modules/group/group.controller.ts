@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/CatchAsync.js';
-import { addToGroup, removeFromGroup } from './group.service.js';
+import { addToGroup, removeFromGroup, renameGroup } from './group.service.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { sendResponse } from '../../utils/sendResponse.js';
 
@@ -20,8 +20,16 @@ export const removeFromGroupController = catchAsync(async (req: Request, res: Re
     const { groupId, userId } = req.body
 
     if (!groupId || !userId) throw new ApiError(400, "groupId and userId are required")
-    
+
     const group = await removeFromGroup(groupId, userId)
 
     sendResponse(res, 200, "User removed from group", group)
+})
+
+export const renameGroupController = catchAsync(async (req: Request, res: Response) => {
+    const { groupId, newName } = req.body
+
+    if (!groupId || !newName) throw new ApiError(400, "groupId and newName are required")
+    const group = await renameGroup(groupId, newName)
+    sendResponse(res, 200, "Group renamed successfully", group)
 })

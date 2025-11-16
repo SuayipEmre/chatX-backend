@@ -1,20 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-/*
-groupName → string
-
-users → user id array
-
-admin → user id
-
-latestMessage → message id (son mesaj)
-
-isGroupChat → boolean
-
-createdAt / updatedAt
-
-👉 TIP: users kısmı [{ type: Schema.Types.ObjectId, ref: "User" }]
-*/
 
 
 export interface IGroup extends Document {
