@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/CatchAsync.js';
-import { addToGroup, createGroup, removeFromGroup, renameGroup } from './group.service.js';
+import { addToGroup, changeAdmin, createGroup, removeFromGroup, renameGroup } from './group.service.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { sendResponse } from '../../utils/sendResponse.js';
 
@@ -41,4 +41,13 @@ export const createGroupController = catchAsync(async (req: Request, res: Respon
     if(!Array.isArray(users)) throw new ApiError(400, "users must be an array of user IDs")
     const group = await createGroup(groupName, users, adminId)
     sendResponse(res, 201, "Group created successfully", group)
+})
+
+export const changeGroupAdminController = catchAsync(async (req: Request, res: Response) => {
+    const { groupId, newAdminId } = req.body;
+
+    if(!groupId || !newAdminId) throw new ApiError(400, "groupId and newAdminId are required");
+    const group = await changeAdmin(groupId, newAdminId);
+
+    sendResponse(res, 200, "Group admin changed successfully", group);
 })
