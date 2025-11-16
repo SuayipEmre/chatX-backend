@@ -47,3 +47,19 @@ export const renameGroup = async (groupId: string, newName: string) => {
 }
 
 
+export const createGroup = async (groupName: string, users: string[], adminId: string) => {
+    if(!groupName || groupName.trim().length === 0) throw new ApiError(400, "Group name is required");
+
+    if (!users || users.length < 2) throw new ApiError(400, "At least 2 users are required to form a group");
+    
+    if(!adminId || !users.includes(adminId) ) throw new ApiError(400, "Admin must be part of the group users");
+
+    const group = await Group.create({
+        groupName: groupName.trim(),
+        users: users.map(id => new Types.ObjectId(id)),
+        admin: new Types.ObjectId(adminId),
+        isGroupChat: true
+    })
+
+    return group
+}
