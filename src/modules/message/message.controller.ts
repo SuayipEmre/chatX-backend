@@ -23,6 +23,8 @@ export const sendMessage = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const getMessages = catchAsync(async (req: Request, res: Response) => {
+  console.log('getMessages called with params:', req.params);
+  
   const { chatId } = req.params;
   if (!chatId) throw new ApiError(400, "Chat ID is required");
 
