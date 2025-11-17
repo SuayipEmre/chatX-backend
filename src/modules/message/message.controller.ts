@@ -17,7 +17,8 @@ export const sendMessage = catchAsync(async (req: Request, res: Response) => {
 
   const message = await createMessage(senderId, content, chatId);
 
-  io.to(chatId).emit("message_received", message);
+  io.emit("message_sent", { chatId, message });
+
 
   sendResponse(res, 201, "Message sent successfully", message);
 });
@@ -43,7 +44,8 @@ export const markAsReadController = catchAsync(async (req: Request, res: Respons
 
   const chatId = message.chat.toString();
 
-  io.to(chatId).emit("message_read", { messageId, userId });
+  io.emit("message_read", { chatId, messageId, userId });
+
 
   sendResponse(res, 200, "Message marked as read", message)
 })

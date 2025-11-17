@@ -10,6 +10,7 @@ export const accessChat = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.body;
   const currentUserId = (req as any).user.id;
 
+  
   if (!userId) throw new ApiError(400, "User ID is required");
 
   const chat = await accessChatService(currentUserId, userId)
@@ -31,7 +32,7 @@ export const fetchChats = catchAsync(async (req: Request, res: Response) => {
 export const createGroupChat = catchAsync(async (req: Request, res: Response) => {
   const { chatName, users } = req.body;
   const currentUserId = (req as any).user.id;
-  const fullGroupChat = createGroupChatService(currentUserId, chatName, users);
+  const fullGroupChat = await createGroupChatService(currentUserId, chatName, users);
 
   sendResponse(res, 201, "Group chat created", fullGroupChat);
 });

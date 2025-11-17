@@ -10,7 +10,7 @@ export const createUser = async (data: {
     password: string;
 }) => {
     if (!data.username || !data.email || !data.password) {
-        throw new Error("All fields are required");
+        throw new ApiError(400, "All fields are required");
     }
     const exists = await User.findOne({ email: data.email });
     if (exists) throw new ApiError(400, "Email already exists");
@@ -34,13 +34,16 @@ export const authenticateUser = async (email: string, password: string) => {
     if (!match) throw new ApiError(400, "Invalid email or password");
 
     const tokens = generateTokens(user);
-    const cleanUser = await User.findByIdAndUpdate(user._id, { refreshToken: tokens.refreshToken }, { new: true }).select('-refreshToken').lean()
+    const cleanUser = await User.findByIdAndUpdate(
+        user._id,
+        { refreshToken: tokens.refreshToken },
+        { new: true }
+    ).select('-refreshToken').lean()
 
     return { user: cleanUser, tokens };
 };
 
 export const generateTokens = (user: IUser) => {
-    console.log('Generating tokens for user : ', user);
 
     const accessToken = jwt.sign(
         { id: user._id },
