@@ -1,4 +1,3 @@
-// src/server.ts
 import http from "http";
 import { Server, Socket } from "socket.io";
 import app from "./app.js";
@@ -12,6 +11,7 @@ const redis = createClient({ url: "redis://localhost:6379" });
 await redis.connect();
 
 const PORT = process.env.PORT || 8080;
+
 
 async function start() {
   await connectDB();

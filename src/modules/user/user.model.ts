@@ -37,8 +37,7 @@ const userSchema = new mongoose.Schema<IUser>({
     },
     refreshToken: {
         type: String,
-        default: null, // ✅ refresh token default değeri
-
+        default: null, 
       },
 }, {timestamps: true})
 

@@ -2,12 +2,13 @@ import express from 'express'
 import cors from "cors"
 import { config } from 'dotenv'
 import userRoutes from './modules/user/user.routes.js'
-import chatRoutes  from './modules/chat/chat.routes.js'
+import chatRoutes from './modules/chat/chat.routes.js'
 import messageRoutes from './modules/message/message.routes.js'
 import groupRoutes from "./modules/group/group.routes.js";
-
 import { errorMiddleware } from './middlewares/error.middleware.js'
 config()
+
+
 
 const app = express()
 
