@@ -12,6 +12,15 @@ export const registerSocketHandlers = (io: Server) => {
     // message events
     messageSocketHandler(io, socket);
 
+
+    socket.on("typing", (room) => {
+      socket.in(room).emit("typing");
+    });
+  
+    socket.on("stop typing", (room) => {
+      socket.in(room).emit("stop typing");
+    });
+
     socket.on("disconnect", () => {
       console.log("❌ Client disconnected:", socket.id);
     });

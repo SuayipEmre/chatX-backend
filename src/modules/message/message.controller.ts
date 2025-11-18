@@ -14,11 +14,10 @@ export const sendMessage = catchAsync(async (req: Request, res: Response) => {
 
   if (!content || !chatId) throw new ApiError(400, "Content and chatId are required");
 
-
   const message = await createMessage(senderId, content, chatId);
 
-  io.emit("message_sent", { chatId, message });
-
+  io.to(chatId).emit("message_received", message);
+  console.log(`📨 Message broadcast → chat: ${chatId}`);
 
   sendResponse(res, 201, "Message sent successfully", message);
 });

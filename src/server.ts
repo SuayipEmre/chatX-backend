@@ -16,4 +16,4 @@ export const io = new Server(server, {
 // tüm socket eventlerini yükle
 registerSocketHandlers(io);
 
-server.listen(PORT, () => console.log("Server running on port 5000"));
+server.listen(PORT, () => console.log("Server running on port : " + PORT));
