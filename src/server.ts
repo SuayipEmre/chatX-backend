@@ -13,7 +13,6 @@ export const io = new Server(server, {
   },
 });
 
-// tüm socket eventlerini yükle
 registerSocketHandlers(io);
-
-server.listen(PORT, () => console.log("Server running on port : " + PORT));
+app.set("io", io);
+server.listen(PORT, () => console.log('Server running on http://localhost:' + PORT));

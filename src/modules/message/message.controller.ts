@@ -41,10 +41,12 @@ export const markAsReadController = catchAsync(async (req: Request, res: Respons
 
   const message = await markMessageAsRead(messageId, userId)
 
-  const chatId = message.chat.toString();
+  const chatId = message.chat?._id?.toString() || message.chat?.toString();
 
-  io.emit("message_read", { chatId, messageId, userId });
-
+  req.app.get("io").to(chatId).emit("message_read", {
+    messageId,
+    userId,
+  });
 
   sendResponse(res, 200, "Message marked as read", message)
 })

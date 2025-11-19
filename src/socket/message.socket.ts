@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { markMessageAsRead } from "../modules/message/message.service.js";
 
 export default function messageSocketHandler(io: Server, socket: Socket) {
 
@@ -7,8 +8,20 @@ export default function messageSocketHandler(io: Server, socket: Socket) {
     io.to(chatId).emit("message_received", message);
   });
 
-  socket.on("message_read", ({ chatId, messageId, userId }) => {
-    console.log(`👁️ Message read → chat: ${chatId} | messageId: ${messageId} | user: ${userId}`);
-    io.to(chatId).emit("message_read", { messageId, userId });
+  socket.on("mark_as_read", async ({ messageId }) => {
+    try {
+      const userId = (socket as any).user.id; 
+
+      console.log(`👁️ Marking as read → messageId: ${messageId} | user: ${userId}`);
+
+      const updatedMessage = await markMessageAsRead(messageId, userId);
+
+      const chatId = updatedMessage.chat.toString();
+
+      io.to(chatId).emit("message_read", updatedMessage);
+
+    } catch (error) {
+      console.error("❌ Error in mark_as_read:", error);
+    }
   });
 }

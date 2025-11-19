@@ -9,19 +9,16 @@ export const createMessage = async (
     content: string,
     chatId: string
 ) => {
-    // 1) Validasyon
     if (!senderId || !content || !chatId) {
         throw new ApiError(400, "senderId, content and chatId are required");
     }
 
-    // 2) Mesajı oluştur
     let message = await Message.create({
         sender: senderId,
         content,
         chat: chatId,
     });
 
-    // 3) Populates — gönderici ve chat bilgilerini doldur
     message = await message.populate([
         { path: "sender", select: "username email avatar" },
         { path: "chat" },
@@ -29,10 +26,8 @@ export const createMessage = async (
 
     const messageId = (message._id as Types.ObjectId).toString();
 
-    // 4) Chat'in son mesajını güncelle
     await updateLatestMessage(chatId, messageId)
 
-    // 5) Controller'da kullanılmak üzere return et
     return message;
 };
 
@@ -65,13 +60,16 @@ export const updateLatestMessage = async (
 };
 
 export const markMessageAsRead = async (messageId: string, userId: string) => {
-    const message = await Message.findById(messageId);
+    const message = await Message.findById(messageId)
+    .populate('sender', 'username email')
+    .populate('chat');
     if (!message) throw new ApiError(404, "Message not found");
 
-    if (message.readBy && !message.readBy.some(u => u?.toString() === userId)) {
-        message.readBy.push(userId)
-        await message.save();
+    if(message?.readBy?.some(u => u?.toString() === userId)){
+        return message
     }
+    message?.readBy?.push(userId);
+    await message.save();
 
     return message
 }

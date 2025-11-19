@@ -5,6 +5,13 @@ import { catchAsync } from "../../utils/CatchAsync.js";
 import { ApiError } from "../../utils/ApiError.js";
 import User from "./user.model.js";
 
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000, 
+};
 
 
 export const register = catchAsync(async (req, res) => {
@@ -16,7 +23,8 @@ export const register = catchAsync(async (req, res) => {
 export const login = catchAsync(async (req, res) => {
   const data = loginSchema.parse(req.body);
   const { user, tokens } = await authenticateUser(data.email, data.password);
-  sendResponse(res, 200, "Login successful", { user, ...tokens });
+  res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
+  sendResponse(res, 200, "Login successful", { user, accessToken: tokens.accessToken });
 })
 
 export const logout = catchAsync(async (req, res) => {
@@ -25,6 +33,7 @@ export const logout = catchAsync(async (req, res) => {
   if (!userId) throw new ApiError(401, "Unauthorized")
 
   await User.findByIdAndUpdate(userId, { refreshToken: null })
+  res.cookie('refreshToken', '', { ...refreshCookieOptions, maxAge: 0 });
   sendResponse(res, 200, "Logout successful", null)
 })
 
@@ -36,11 +45,19 @@ export const getProfile = catchAsync(async (req, res) => {
 })
 
 export const refreshToken = catchAsync(async (req, res) => {
-  const { refreshToken } = req.body
-  if (!refreshToken) throw new ApiError(400, "Refresh token is required")
-  const tokens = await refreshTokenService(refreshToken)
-  sendResponse(res, 200, "Token refreshed", tokens)
-})
+  const refreshToken = req.cookies?.['refreshToken'];
+
+  if (!refreshToken) throw new ApiError(400, "Refresh token is required");
+
+  const { tokens, user } = await refreshTokenService(refreshToken);
+
+  res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
+
+  sendResponse(res, 200, "Token refreshed", {
+    user,
+    accessToken: tokens.accessToken,
+  });
+});
 
 export const updateProfile = catchAsync(async (req, res) => {
   const userId = (req as any).user.id;

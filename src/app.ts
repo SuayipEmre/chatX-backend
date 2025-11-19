@@ -12,7 +12,15 @@ config()
 
 const app = express()
 
-app.use(cors({ origin: '*', credentials: true }))
+const allowedOrigins = [
+    "http://localhost:3000",
+];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 

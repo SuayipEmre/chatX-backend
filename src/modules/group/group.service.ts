@@ -2,9 +2,7 @@ import { Types } from "mongoose";
 import { ApiError } from "../../utils/ApiError.js";
 import Group from "./group.model.js";
 
-/**
- * Add user to a group
- */
+
 export const addToGroup = async (groupId: string, userId: string) => {
     if (!groupId || !userId) throw new ApiError(400, "groupId and userId are required");
 
@@ -22,9 +20,7 @@ export const addToGroup = async (groupId: string, userId: string) => {
     return group;
 };
 
-/**
- * Remove user from group
- */
+
 export const removeFromGroup = async (groupId: string, userId: string) => {
     if (!groupId || !userId) throw new ApiError(400, "groupId and userId are required");
 
@@ -47,9 +43,7 @@ export const removeFromGroup = async (groupId: string, userId: string) => {
     return group;
 };
 
-/**
- * Rename group
- */
+
 export const renameGroup = async (groupId: string, newName: string) => {
     if (!groupId) throw new ApiError(400, "groupId is required");
     if (!newName || newName.trim().length === 0) {
@@ -65,9 +59,6 @@ export const renameGroup = async (groupId: string, newName: string) => {
     return group;
 };
 
-/**
- * Create a new group
- */
 export const createGroup = async (groupName: string, users: string[], adminId: string) => {
     if (!groupName || groupName.trim().length === 0) {
         throw new ApiError(400, "Group name is required");
@@ -91,9 +82,7 @@ export const createGroup = async (groupName: string, users: string[], adminId: s
     return group;
 };
 
-/**
- * Change group admin
- */
+
 export const changeAdmin = async (groupId: string, newAdminId: string) => {
     if (!groupId || !newAdminId) {
         throw new ApiError(400, "groupId and newAdminId are required");

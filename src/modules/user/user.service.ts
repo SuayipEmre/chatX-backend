@@ -76,7 +76,14 @@ export const refreshTokenService = async (refreshToken: string) => {
     user.refreshToken = tokens.refreshToken
     await user.save()
 
-    return tokens
+    const cleanUser = await User.findById(user._id)
+    .select("-password -refreshToken")
+    .lean();
+
+  return {
+    tokens,
+    user: cleanUser,
+  };
 }
 
 export const getProfileService = async (userId: string) => {

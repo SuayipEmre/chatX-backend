@@ -6,21 +6,18 @@ export const registerSocketHandlers = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     console.log("🔌 New client connected:", socket.id);
 
-    // chat room events
     chatSocketHandler(io, socket);
 
-    // message events
     messageSocketHandler(io, socket);
 
 
-    socket.on("typing", (room) => {
-      socket.in(room).emit("typing");
-    });
-  
-    socket.on("stop typing", (room) => {
-      socket.in(room).emit("stop typing");
+    socket.on("typing", ({ chatId, user }) => {
+      socket.in(chatId).emit("typing", { user });
     });
 
+    socket.on("stop_typing", ({ chatId, user }) => {
+      socket.to(chatId).emit("stop_typing", { user });
+    });
     socket.on("disconnect", () => {
       console.log("❌ Client disconnected:", socket.id);
     });

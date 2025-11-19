@@ -1,9 +1,7 @@
 import { ApiError } from "../../utils/ApiError.js";
 import Chat from "./chat.model.js";
 
-/**
- * Access a direct chat or create a new one if it doesn’t exist
- */
+
 export const accessChatService = async (currentUserId: string, userId: string) => {
     if (!userId) throw new ApiError(400, "User ID is required");
 
@@ -48,9 +46,7 @@ export const accessChatService = async (currentUserId: string, userId: string) =
     return chat;
 };
 
-/**
- * Fetch all chats for logged-in user
- */
+
 export const fetchChatsService = async (currentUserId: string) => {
     let chats = await Chat.find({
         users: { $elemMatch: { $eq: currentUserId } },
@@ -77,9 +73,6 @@ export const fetchChatsService = async (currentUserId: string) => {
     return chats;
 };
 
-/**
- * Create a group chat
- */
 export const createGroupChatService = async (
     currentUserId: string,
     chatName: string,

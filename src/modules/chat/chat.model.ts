@@ -10,8 +10,8 @@ export interface IChat extends Document {
     groupAdmin?: IUser["_id"];
     createdAt: Date;
     updatedAt: Date;
-  }
-  
+}
+
 
 
 const ChatSchema = new mongoose.Schema<IChat>(
@@ -39,7 +39,7 @@ const ChatSchema = new mongoose.Schema<IChat>(
             ref: "User",
         },
     },
-    {timestamps:true}
+    { timestamps: true }
 )
 
 const Chat = mongoose.model<IChat>('Chat', ChatSchema);
