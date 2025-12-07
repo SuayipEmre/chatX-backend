@@ -10,26 +10,30 @@ const refreshCookieOptions = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000, 
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
 
 export const register = catchAsync(async (req, res) => {
-  const data = registerSchema.parse(req.body);
-  const user = await createUser(data);
-  sendResponse(res, 201, "User created", user);
+  const{ email, username, password } =registerSchema.parse(req.body)
+  const {user, tokens} = await createUser(email, username, password);
+  sendResponse(res, 201, "User created", {user, ...tokens});
 })
 
 export const login = catchAsync(async (req, res) => {
   const data = loginSchema.parse(req.body);
   const { user, tokens } = await authenticateUser(data.email, data.password);
   res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
-  sendResponse(res, 200, "Login successful", { user, accessToken: tokens.accessToken });
+  sendResponse(res, 200, "Login successful", {
+    user, ...tokens
+  });
 })
 
 export const logout = catchAsync(async (req, res) => {
   const userId = (req as any).user.id
 
+  console.log('Logging out userId : ', userId);
+  
   if (!userId) throw new ApiError(401, "Unauthorized")
 
   await User.findByIdAndUpdate(userId, { refreshToken: null })
@@ -45,7 +49,7 @@ export const getProfile = catchAsync(async (req, res) => {
 })
 
 export const refreshToken = catchAsync(async (req, res) => {
-  const refreshToken = req.cookies?.['refreshToken'];
+  const refreshToken = req.cookies?.['refreshToken'] || req.body.refreshToken
 
   if (!refreshToken) throw new ApiError(400, "Refresh token is required");
 
@@ -55,7 +59,7 @@ export const refreshToken = catchAsync(async (req, res) => {
 
   sendResponse(res, 200, "Token refreshed", {
     user,
-    accessToken: tokens.accessToken,
+    ...tokens
   });
 });
 

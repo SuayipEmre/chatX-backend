@@ -4,26 +4,29 @@ import jwt from 'jsonwebtoken'
 import { ApiError } from "../../utils/ApiError.js";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/env.js";
 
-export const createUser = async (data: {
-    username: string;
-    email: string;
-    password: string;
-}) => {
-    if (!data.username || !data.email || !data.password) {
+export const createUser = async (email : string, username : string, password : string) => {
+    if (!username || !email || !password) {
         throw new ApiError(400, "All fields are required");
     }
-    const exists = await User.findOne({ email: data.email });
+    const exists = await User.findOne({ email: email });
     if (exists) throw new ApiError(400, "Email already exists");
 
-    const hashed = await bcrypt.hash(data.password, 10);
+    const hashed = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-        username: data.username,
-        email: data.email,
+        username: username,
+        email: email,
         password: hashed,
     });
 
-    return user;
+    const tokens = generateTokens(user);
+    const cleanUser = await User.findByIdAndUpdate(
+        user._id,
+        { refreshToken: tokens.refreshToken },
+        { new: true }
+    ).select('-refreshToken').lean()
+    return {user : cleanUser, tokens}
+
 };
 
 export const authenticateUser = async (email: string, password: string) => {

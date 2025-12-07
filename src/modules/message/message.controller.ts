@@ -9,22 +9,13 @@ import { createMessage, getMessagesByChat, markMessageAsRead } from "./message.s
 export const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const { content, chatId } = req.body;
   const senderId = (req as any).user.id;
-
-  console.log("sendMessage called with:", { content, chatId, senderId });
-
   if (!content || !chatId) throw new ApiError(400, "Content and chatId are required");
-
   const message = await createMessage(senderId, content, chatId);
-
   io.to(chatId).emit("message_received", message);
-  console.log(`📨 Message broadcast → chat: ${chatId}`);
-
   sendResponse(res, 201, "Message sent successfully", message);
 });
 
 export const getMessages = catchAsync(async (req: Request, res: Response) => {
-  console.log('getMessages called with params:', req.params);
-
   const { chatId } = req.params;
   if (!chatId) throw new ApiError(400, "Chat ID is required");
 

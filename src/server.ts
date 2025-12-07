@@ -4,6 +4,7 @@ import app from "./app.js";
 import { registerSocketHandlers } from "./socket/index.js";
 import { PORT } from "./config/env.js";
 import conntectDB from "./config/db.js";
+import { createRedisAdapter } from "./config/redis.js";
 
 conntectDB()
 const server = http.createServer(app);
@@ -13,6 +14,9 @@ export const io = new Server(server, {
   },
 });
 
+(async () => {
+  await createRedisAdapter(io);
+})();
 registerSocketHandlers(io);
 app.set("io", io);
 server.listen(PORT, () => console.log('Server running on http://localhost:' + PORT));
