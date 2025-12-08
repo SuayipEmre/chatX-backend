@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import { ApiError } from "../../utils/ApiError.js";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/env.js";
+import { bucket } from "../../config/firebase.js";
 
 export const createUser = async (email : string, username : string, password : string) => {
     if (!username || !email || !password) {
@@ -178,3 +179,32 @@ export const updateProfileService = async (userId: string, email?: string, usern
     return updatedUser
 
 }
+
+
+export const uploadUserAvatarService = async (base64: string) => {
+    try {
+      const buffer = Buffer.from(base64, "base64");
+  
+      const fileName = `avatars/${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 8)}.jpg`;
+      const file = bucket.file(fileName);
+  
+      await file.save(buffer, {
+        metadata: {
+          contentType: "image/png",
+        },
+        public: true,
+      });
+
+      await file.makePublic()
+  
+      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+  
+      return imageUrl;
+    } catch (error) {
+      console.log("Firebase upload error:", error);
+      throw new ApiError(500, "Avatar upload failed");
+    }
+  };
+  

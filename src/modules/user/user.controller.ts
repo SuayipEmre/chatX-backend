@@ -1,4 +1,4 @@
-import { createUser, authenticateUser, getProfileService, searchUsersService, changePasswordService, updateProfileService, refreshTokenService } from "./user.service.js";
+import { createUser, authenticateUser, getProfileService, searchUsersService, changePasswordService, updateProfileService, refreshTokenService, uploadUserAvatarService } from "./user.service.js";
 import { registerSchema, loginSchema } from "./user.schema.js";
 import { sendResponse } from "../../utils/sendResponse.js";
 import { catchAsync } from "../../utils/CatchAsync.js";
@@ -63,6 +63,19 @@ export const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
+export const uploadUserAvatar = catchAsync(async (req, res) => {
+  const { image } = req.body;
+
+  if (!image) {
+    throw new ApiError(400, "Image base64 is required");
+  }
+
+  const imageUrl = await uploadUserAvatarService(image);
+
+  sendResponse(res, 201, "Avatar uploaded successfully", {
+    imageUrl,
+  });
+});
 export const updateProfile = catchAsync(async (req, res) => {
   const userId = (req as any).user.id;
   const { email, username, avatar } = req.body;

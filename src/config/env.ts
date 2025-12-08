@@ -9,5 +9,6 @@ export const {
     JWT_SECRET,
     JWT_EXPIRES_IN,
     REDIS_URL,
-    JWT_REFRESH_SECRET
+    JWT_REFRESH_SECRET,
+    FIREBASE_STORAGE_BUCKET
 } = process.env;

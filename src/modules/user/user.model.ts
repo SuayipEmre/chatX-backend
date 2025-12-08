@@ -33,7 +33,8 @@ const userSchema = new mongoose.Schema<IUser>({
         required: true
     },
     avatar: {
-        type: String
+        type: String,
+        default: null
     },
     refreshToken: {
         type: String,
