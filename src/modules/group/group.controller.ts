@@ -36,11 +36,13 @@ export const renameGroupController = catchAsync(async (req: Request, res: Respon
 
 export const createGroupController = catchAsync(async (req: Request, res: Response) => {
     const{groupName, users, adminId} = req.body
+    console.log('createGroupController body:', req.body);
+    
     if(!groupName || !users || !adminId) throw new ApiError(400, "groupName, users and adminId are required")
 
     if(!Array.isArray(users)) throw new ApiError(400, "users must be an array of user IDs")
-    const group = await createGroup(groupName, users, adminId)
-    sendResponse(res, 201, "Group created successfully", group)
+    const {group, chat} = await createGroup(groupName, users, adminId)
+    sendResponse(res, 201, "Group created successfully", {group, chat})
 })
 
 export const changeGroupAdminController = catchAsync(async (req: Request, res: Response) => {

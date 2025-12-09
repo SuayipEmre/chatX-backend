@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { ApiError } from "../../utils/ApiError.js";
 import Chat from "./chat.model.js";
 
@@ -5,7 +6,6 @@ import Chat from "./chat.model.js";
 export const accessChatService = async (currentUserId: string, userId: string) => {
     if (!userId) throw new ApiError(400, "User ID is required");
 
-    // 1) Mevcut DM chat var mı?
     let chat = await Chat.findOne({
         isGroupChat: false,
         users: { $all: [currentUserId, userId] },
@@ -17,7 +17,6 @@ export const accessChatService = async (currentUserId: string, userId: string) =
         })
         .lean();
 
-    // 2) Yoksa yeni chat oluştur
     if (!chat) {
         const newChat = await Chat.create({
             chatName: "direct_chat",
@@ -36,7 +35,6 @@ export const accessChatService = async (currentUserId: string, userId: string) =
 
     if (!chat) throw new ApiError(500, "Failed to fetch or create chat");
 
-    // 3) DM chat ise diğer kullanıcıyı tespit et
     if (!chat.isGroupChat) {
         (chat as any).otherUser = chat.users.find(
             (u: any) => u._id.toString() !== currentUserId
@@ -48,30 +46,35 @@ export const accessChatService = async (currentUserId: string, userId: string) =
 
 
 export const fetchChatsService = async (currentUserId: string) => {
+    const userObjectId = new Types.ObjectId(currentUserId);
+  
     let chats = await Chat.find({
-        users: { $elemMatch: { $eq: currentUserId } },
+      users: { $in: [userObjectId] },  
     })
-        .populate("users", "username email avatar")
-        .populate("groupAdmin", "username email avatar")
-        .populate({
-            path: "latestMessage",
-            populate: { path: "sender", select: "username email avatar" },
-        })
-        .sort({ updatedAt: -1 })
-        .lean();
-
-    // DM chatlerde karşı kullanıcıyı ekle
+      .populate("users", "username email avatar")
+      .populate({
+        path: "latestMessage",
+        populate: { path: "sender", select: "username email avatar" },
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+  
+      console.log('Fetched chats:', chats);
+      
     chats = chats.map((chat: any) => {
-        if (!chat.isGroupChat) {
-            chat.otherUser = chat.users.find(
-                (u: any) => u._id.toString() !== currentUserId
-            );
-        }
-        return chat;
-    });
+      if (!chat.isGroupChat) {
+        chat.otherUser = chat.users.find(
+          (u: any) => u._id.toString() !== currentUserId
+        );
+      }
 
+      
+      return chat;
+    });
+    console.log('latest chat : ', chats);
+  
     return chats;
-};
+  };
 
 export const createGroupChatService = async (
     currentUserId: string,

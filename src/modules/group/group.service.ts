@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { ApiError } from "../../utils/ApiError.js";
 import Group from "./group.model.js";
+import Chat from "../chat/chat.model.js";
 
 
 export const addToGroup = async (groupId: string, userId: string) => {
@@ -77,9 +78,22 @@ export const createGroup = async (groupName: string, users: string[], adminId: s
         users: users.map((id) => new Types.ObjectId(id)),
         admin: new Types.ObjectId(adminId),
         isGroupChat: true,
-    });
+    })
 
-    return group;
+    const chat = await Chat.create({
+        users: users.map(id => new Types.ObjectId(id)),
+        isGroupChat: true,
+        group: group._id,
+        latestMessage: null,
+        chatName : groupName.trim()
+    })
+
+
+
+    return {
+        group,
+        chat,
+    };
 };
 
 
