@@ -7,17 +7,17 @@ import User from "./user.model.js";
 
 const refreshCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  secure: process.env.NODE_ENV === "production" ? true : false,
+  sameSite: process.env.NODE_ENV === "production" ? "none" as const : "lax" as const,
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
-
 
 export const register = catchAsync(async (req, res) => {
   const{ email, username, password } =registerSchema.parse(req.body)
   const {user, tokens} = await createUser(email, username, password);
   sendResponse(res, 201, "User created", {user, ...tokens});
+  res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
 })
 
 export const login = catchAsync(async (req, res) => {
