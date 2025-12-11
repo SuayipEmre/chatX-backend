@@ -15,6 +15,5 @@ try {
   console.log("✅ Redis adapter connected");
 } catch (error) {
   console.log('❌ Redis adapter connection error:', error);
-  
 }
 }
