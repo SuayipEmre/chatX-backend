@@ -105,12 +105,10 @@ export const changeAdmin = async (groupId: string, newAdminId: string) => {
     const group = await Group.findById(groupId);
     if (!group) throw new ApiError(404, "Group not found");
 
-    // Yeni admin grupta olmayabilir
     if (!group.users.some((u) => u.toString() === newAdminId)) {
         throw new ApiError(400, "New admin must be a member of the group");
     }
 
-    // Zaten admin ise
     if (group.admin.toString() === newAdminId) {
         throw new ApiError(400, "User is already the admin of the group");
     }

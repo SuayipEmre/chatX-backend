@@ -3,6 +3,7 @@ import { catchAsync } from '../../utils/CatchAsync.js';
 import { addToGroup, changeAdmin, createGroup, removeFromGroup, renameGroup } from './group.service.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { sendResponse } from '../../utils/sendResponse.js';
+import Group from './group.model.js';
 
 
 export const addToGroupController = catchAsync(async (req: Request, res: Response) => {
@@ -52,4 +53,13 @@ export const changeGroupAdminController = catchAsync(async (req: Request, res: R
     const group = await changeAdmin(groupId, newAdminId);
 
     sendResponse(res, 200, "Group admin changed successfully", group);
+})
+
+export const fetchGroupDetailsController = catchAsync(async (req : Request, res : Response) =>{
+    const groupId = (req as any).query.id
+    if(!groupId) throw new ApiError(400, "groupId is required")
+
+    const group = await Group.findById({_id:groupId}).populate('users', 'email avatar username')
+    
+    sendResponse(res, 200, "successfuly fetching the group details", group)
 })

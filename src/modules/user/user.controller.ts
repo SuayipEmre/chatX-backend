@@ -51,6 +51,9 @@ export const getProfile = catchAsync(async (req, res) => {
 export const refreshToken = catchAsync(async (req, res) => {
   const refreshToken = req.cookies?.['refreshToken'] || req.body.refreshToken
 
+  console.log('refreshToken controller cookies : ', req.cookies);
+  
+
   if (!refreshToken) throw new ApiError(400, "Refresh token is required");
 
   const { tokens, user } = await refreshTokenService(refreshToken);
