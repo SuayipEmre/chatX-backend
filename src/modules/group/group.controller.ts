@@ -59,7 +59,12 @@ export const fetchGroupDetailsController = catchAsync(async (req : Request, res 
     const groupId = (req as any).query.id
     if(!groupId) throw new ApiError(400, "groupId is required")
 
-    const group = await Group.findById({_id:groupId}).populate('users', 'email avatar username')
+        console.log('Fetching details for groupId:', groupId);
+        
+    const group = await Group.findById({_id:groupId})
+    .populate('users admin', 'email avatar username')
+    
+    console.log('DETAILS : ', group);
     
     sendResponse(res, 200, "successfuly fetching the group details", group)
 })

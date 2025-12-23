@@ -10,6 +10,7 @@ export interface IChat extends Document {
     groupAdmin?: IUser["_id"];
     createdAt: Date;
     updatedAt: Date;
+    group : mongoose.Types.ObjectId | null;
 }
 
 
@@ -34,9 +35,16 @@ const ChatSchema = new mongoose.Schema<IChat>(
             type: Schema.Types.ObjectId,
             ref: "Message",
         },
+        
         groupAdmin: {
             type: Schema.Types.ObjectId,
             ref: "User",
+        },
+
+        group: {
+            type: Schema.Types.ObjectId,
+            ref: "Group",
+            default: null,
         },
     },
     { timestamps: true }

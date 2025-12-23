@@ -18,6 +18,8 @@ export const createMessage = async (
         content,
         chat: chatId,
     });
+    console.log("📝 Created Message:", message);
+    
 
     message = await message.populate([
         { path: "sender", select: "username email avatar" },
@@ -27,7 +29,11 @@ export const createMessage = async (
     const messageId = (message._id as Types.ObjectId).toString();
 
     await updateLatestMessage(chatId, messageId)
-
+    console.log("💾 SAVING MESSAGE:", {
+        senderId,
+        content,
+        chatId,
+      });
     return message;
 };
 
@@ -35,7 +41,7 @@ export const getMessagesByChat = async (chatId: string) => {
     if (!chatId) throw new ApiError(400, "chatId is required");
 
     const messages = await Message.find({ chat: chatId })
-        .populate("sender", "username email avatar")
+        .populate("sender", "username email avatar lastSeenAt")
         .populate("chat")
         .sort({ createdAt: 1 })
         .lean();

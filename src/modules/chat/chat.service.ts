@@ -51,29 +51,43 @@ export const fetchChatsService = async (currentUserId: string) => {
     let chats = await Chat.find({
       users: { $in: [userObjectId] },  
     })
-      .populate("users", "username email avatar")
+      .populate("users", "username email avatar lastSeenAt")
       .populate({
         path: "latestMessage",
         populate: { path: "sender", select: "username email avatar" },
+      })
+      .populate({
+        path: "group",
+        select: "_id groupName",
       })
       .sort({ updatedAt: -1 })
       .lean();
   
       console.log('Fetched chats:', chats);
+      chats = chats.map((chat: any) => {
+        if (chat.isGroupChat) {
+          const rawGroup = chat.group;
       
-    chats = chats.map((chat: any) => {
-      if (!chat.isGroupChat) {
-        chat.otherUser = chat.users.find(
-          (u: any) => u._id.toString() !== currentUserId
-        );
-      }
-
+          chat.groupId =
+            rawGroup && typeof rawGroup === "object"
+              ? rawGroup._id?.toString?.() ?? rawGroup._id
+              : rawGroup?.toString?.() ?? rawGroup ?? null;
       
-      return chat;
-    });
-    console.log('latest chat : ', chats);
-  
-    return chats;
+          chat.groupName =
+            rawGroup && typeof rawGroup === "object"
+              ? rawGroup.groupName ?? chat.chatName
+              : chat.chatName;
+        } else {
+          chat.otherUser = chat.users.find(
+            (u: any) => u._id.toString() !== currentUserId
+          );
+        }
+      
+        delete chat.group; 
+        return chat;
+      });
+      
+      return chats
   };
 
 export const createGroupChatService = async (

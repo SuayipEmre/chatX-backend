@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { ApiError } from "../../utils/ApiError.js";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/env.js";
 import { bucket } from "../../config/firebase.js";
+import { signAccessToken } from "../../utils/token.js";
 
 export const createUser = async (email : string, username : string, password : string) => {
     if (!username || !email || !password) {
@@ -65,30 +66,31 @@ export const generateTokens = (user: IUser) => {
 };
 
 export const refreshTokenService = async (refreshToken: string) => {
-    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string) as { id: string }
-
+    const decoded = jwt.verify(
+      refreshToken,
+      JWT_REFRESH_SECRET as string
+    ) as { id: string }
+  
     const user = await User.findById(decoded.id)
-
-    if (!user) throw new ApiError(401, "Invalid refresh token")
-
-    if (user.refreshToken !== refreshToken) {
-        throw new ApiError(401, "Token mismatch or already used");
+  
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new ApiError(401, 'Invalid refresh token')
     }
-
-    const tokens = generateTokens(user as IUser)
-
-    user.refreshToken = tokens.refreshToken
-    await user.save()
-
-    const cleanUser = await User.findById(user._id)
-    .select("-password -refreshToken")
-    .lean();
-
-  return {
-    tokens,
-    user: cleanUser,
-  };
-}
+  
+    return {
+      tokens: {
+        accessToken: signAccessToken(user._id as string),
+        refreshToken, 
+      },
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+      },
+    }
+  }
+  
 
 export const getProfileService = async (userId: string) => {
     if (!userId) throw new ApiError(401, "Unauthorized")

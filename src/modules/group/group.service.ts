@@ -85,6 +85,7 @@ export const createGroup = async (groupName: string, users: string[], adminId: s
         isGroupChat: true,
         group: group._id,
         latestMessage: null,
+        groupAdmin: group.admin,   
         chatName : groupName.trim()
     })
 
@@ -102,7 +103,8 @@ export const changeAdmin = async (groupId: string, newAdminId: string) => {
         throw new ApiError(400, "groupId and newAdminId are required");
     }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId)
+
     if (!group) throw new ApiError(404, "Group not found");
 
     if (!group.users.some((u) => u.toString() === newAdminId)) {
@@ -112,9 +114,7 @@ export const changeAdmin = async (groupId: string, newAdminId: string) => {
     if (group.admin.toString() === newAdminId) {
         throw new ApiError(400, "User is already the admin of the group");
     }
-
     group.admin = new Types.ObjectId(newAdminId);
     await group.save();
-
     return group;
 };

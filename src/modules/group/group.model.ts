@@ -10,6 +10,7 @@ export interface IGroup extends Document {
     isGroupChat: boolean;
     createdAt: Date;
     updatedAt: Date;
+    avatar?: string | null;
 }
 
 
@@ -19,7 +20,11 @@ const GroupSchema = new mongoose.Schema<IGroup>(
         users: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
         admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
         latestMessage: { type: Schema.Types.ObjectId, ref: "Message" },
-        isGroupChat: { type: Boolean, default: true }
+        isGroupChat: { type: Boolean, default: true },
+        avatar: {
+            type: String,
+            default: null
+        },
 
     },
     { timestamps: true }

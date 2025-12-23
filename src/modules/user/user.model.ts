@@ -10,6 +10,7 @@ export interface IUser extends Document {
     createdAt: Date,
     updatedAt: Date,
     refreshToken?: string | null;
+    lastSeenAt?: Date | null;
 }
 
 
@@ -40,6 +41,10 @@ const userSchema = new mongoose.Schema<IUser>({
         type: String,
         default: null, 
       },
+      lastSeenAt: {
+        type: Date,
+        default: null,
+      }
 }, {timestamps: true})
 
 userSchema.index({ username: "text", email: "text" });
